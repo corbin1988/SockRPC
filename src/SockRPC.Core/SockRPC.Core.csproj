@@ -25,4 +25,13 @@
         <PackageReference Include="NUnit3TestAdapter" Version="5.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Configuration\"/>
+        <Folder Include="Connection\"/>
+        <Folder Include="Handling\"/>
+        <Folder Include="JsonRpc\"/>
+        <Folder Include="Middleware\"/>
+        <Folder Include="Routing\"/>
+    </ItemGroup>
+
 </Project>
