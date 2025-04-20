@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D07ECEBE-2BF1-412C-8D91-39D1B9AC8D6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SockRPC.Tests", "src\SockRPC.Tests\SockRPC.Tests.csproj", "{BB5146BC-9706-471C-9641-5006CF2C9600}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SockRPC.Core", "src\SockRPC.Core\SockRPC.Core.csproj", "{77108BF7-1811-4974-9FB6-61896CD231D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB5146BC-9706-471C-9641-5006CF2C9600}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB5146BC-9706-471C-9641-5006CF2C9600}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB5146BC-9706-471C-9641-5006CF2C9600}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB5146BC-9706-471C-9641-5006CF2C9600}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77108BF7-1811-4974-9FB6-61896CD231D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77108BF7-1811-4974-9FB6-61896CD231D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77108BF7-1811-4974-9FB6-61896CD231D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77108BF7-1811-4974-9FB6-61896CD231D0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BB5146BC-9706-471C-9641-5006CF2C9600} = {D07ECEBE-2BF1-412C-8D91-39D1B9AC8D6F}
+		{77108BF7-1811-4974-9FB6-61896CD231D0} = {D07ECEBE-2BF1-412C-8D91-39D1B9AC8D6F}
+	EndGlobalSection
+EndGlobal

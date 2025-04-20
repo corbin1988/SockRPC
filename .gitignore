@@ -1,0 +1,32 @@
+# Ignore build output directories
+src/**/bin/
+src/**/obj/
+
+# Ignore Rider/JetBrains IDE files
+.idea/
+*.DotSettings.user
+
+# Ignore NuGet package-related files
+src/**/project.nuget.cache
+src/**/project.assets.json
+src/**/project.packagespec.json
+src/**/rider.project.model.nuget.info
+src/**/rider.project.restore.info
+
+# Ignore debug and runtime files
+src/**/Debug/
+src/**/refint/
+src/**/ref/
+
+# Ignore generated MSBuild files
+src/**/GeneratedMSBuildEditorConfig.editorconfig
+src/**/AssemblyInfoInputs.cache
+src/**/CoreCompileInputs.cache
+src/**/genruntimeconfig.cache
+src/**/FileListAbsolute.txt
+src/**/Up2Date
+src/**/sourcelink.json
+
+# Ignore logs and temporary files
+*.log
+*.tmp
