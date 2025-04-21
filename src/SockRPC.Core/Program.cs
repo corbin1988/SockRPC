@@ -1,12 +1,16 @@
-using System;
+using SockRPC.Core.Configuration;
 
-namespace SockRPC
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            Console.WriteLine("SockRPC is alive!");
-        }
-    }
-}
+var builder = WebApplication.CreateBuilder(args);
+
+// TODO: Allow developers to specify their own configuration file
+builder.Configuration.AddJsonFile("Configuration/appsettings.json", false, true);
+
+builder.Services.Configure<WebSocketSettings>(builder.Configuration.GetSection("WebSocketSettings"));
+
+var configuration = builder.Configuration.GetSection("WebSocketSettings").Get<WebSocketSettings>();
+if (configuration == null)
+    throw new InvalidOperationException("WebSocketSettings section is missing in the configuration.");
+
+var app = builder.Build();
+
+app.Run();
