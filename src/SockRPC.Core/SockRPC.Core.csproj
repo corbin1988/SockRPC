@@ -33,7 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Connection\"/>
         <Folder Include="Handling\"/>
         <Folder Include="JsonRpc\"/>
         <Folder Include="Middleware\"/>
