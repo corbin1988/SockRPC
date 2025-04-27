@@ -9,6 +9,10 @@ builder.Services.AddSingleton<IWebSocketServer, WebSocketServer>();
 // TODO: Allow developers to specify their own configuration file
 builder.Configuration.AddJsonFile("Configuration/appsettings.json", false, true);
 
+
+builder.Services.AddSingleton<IWebSocketConnectionAcceptor, WebSocketConnectionAcceptor>();
+builder.Services.AddSingleton<IWebSocketMessageProcessor, WebSocketMessageProcessor>();
+builder.Services.AddSingleton<IWebSocketServer, WebSocketServer>();
 builder.Services.Configure<WebSocketSettings>(builder.Configuration.GetSection("WebSocketSettings"));
 
 var configuration = builder.Configuration.GetSection("WebSocketSettings").Get<WebSocketSettings>();

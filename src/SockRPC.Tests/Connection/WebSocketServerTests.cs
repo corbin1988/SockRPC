@@ -17,11 +17,13 @@ public class WebSocketServerTests
     {
         _mockConnectionAcceptor = Substitute.For<IWebSocketConnectionAcceptor>();
         _mockLogger = Substitute.For<ILogger<WebSocketServer>>();
-        _server = new WebSocketServer(_mockConnectionAcceptor, _mockLogger);
+        _mockMessageProcessor = Substitute.For<IWebSocketMessageProcessor>();
+        _server = new WebSocketServer(_mockConnectionAcceptor, _mockLogger, _mockMessageProcessor);
     }
 
     private IWebSocketConnectionAcceptor _mockConnectionAcceptor;
     private ILogger<WebSocketServer> _mockLogger;
+    private IWebSocketMessageProcessor _mockMessageProcessor;
     private WebSocketServer _server;
 
     [Test]
@@ -39,6 +41,7 @@ public class WebSocketServerTests
 
         // Then
         await _mockConnectionAcceptor.Received(1).AcceptConnectionAsync(context);
+        await _mockMessageProcessor.Received(1).ProcessMessageAsync(mockWebSocket, Arg.Any<byte[]>());
     }
 
     [Test]
