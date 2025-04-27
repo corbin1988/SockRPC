@@ -1,11 +1,13 @@
 using System.Net.WebSockets;
+using SockRPC.Core.Configuration;
 using SockRPC.Core.Connection.Interfaces;
 
 namespace SockRPC.Core.Connection;
 
 public class WebSocketMessageProcessor : IWebSocketMessageProcessor
 {
-    public async Task ProcessMessageAsync(WebSocket webSocket, byte[] buffer)
+    //TODO: Add a buffer manager functionality to manage once ready to work on handlers 
+    public async Task ProcessMessageAsync(WebSocket webSocket, byte[] buffer, WebSocketSettings settings)
     {
         Console.WriteLine("Received message: ");
         WebSocketReceiveResult result;

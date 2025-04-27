@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using System.Text;
 using FluentAssertions;
 using NSubstitute;
+using SockRPC.Core.Configuration;
 using SockRPC.Core.Connection;
 
 namespace SockRPC.Tests.Connection;
@@ -15,6 +16,11 @@ public class WebSocketMessageProcessorTests
         // Given: A WebSocketMessageProcessor and a mock WebSocket
         _messageProcessor = new WebSocketMessageProcessor();
         _mockWebSocket = Substitute.For<WebSocket>();
+        _webSocketSettings = new WebSocketSettings
+        {
+            BufferSize = 1024,
+            MaxMessageSize = 2048
+        };
     }
 
     [TearDown]
@@ -25,6 +31,7 @@ public class WebSocketMessageProcessorTests
 
     private WebSocketMessageProcessor _messageProcessor;
     private WebSocket _mockWebSocket;
+    private WebSocketSettings _webSocketSettings;
 
     [Test]
     public async Task ProcessMessageAsync_ShouldThrowException_WhenMessageTypeIsClose()
@@ -37,7 +44,7 @@ public class WebSocketMessageProcessorTests
                 new WebSocketReceiveResult(0, WebSocketMessageType.Close, true)));
 
         // When: ProcessMessageAsync is called
-        var act = async () => await _messageProcessor.ProcessMessageAsync(_mockWebSocket, buffer);
+        var act = async () => await _messageProcessor.ProcessMessageAsync(_mockWebSocket, buffer, _webSocketSettings);
 
         // Then: A WebSocketException should be thrown
         await act.Should().ThrowAsync<WebSocketException>()
@@ -64,7 +71,7 @@ public class WebSocketMessageProcessorTests
             });
 
         // When: ProcessMessageAsync is called
-        await _messageProcessor.ProcessMessageAsync(_mockWebSocket, buffer);
+        await _messageProcessor.ProcessMessageAsync(_mockWebSocket, buffer, _webSocketSettings);
 
         // Then: The buffer should contain the received message
         var receivedMessage = Encoding.UTF8.GetString(buffer, 0, messageBytes.Length);
