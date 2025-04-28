@@ -27,7 +27,7 @@ public class WebSocketServer(
     }
 
     //TODO: Public for testing (can later change to internal + InternalsVisibleTo)
-    public async Task Process(WebSocket webSocket)
+    internal async Task Process(WebSocket webSocket)
     {
         var buffer = bufferManager.RentBuffer(settings.BufferSize);
         try

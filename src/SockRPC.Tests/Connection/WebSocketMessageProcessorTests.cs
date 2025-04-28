@@ -13,7 +13,6 @@ public class WebSocketMessageProcessorTests
     [SetUp]
     public void SetUp()
     {
-        // Given: A WebSocketMessageProcessor and a mock WebSocket
         _messageProcessor = new WebSocketMessageProcessor();
         _mockWebSocket = Substitute.For<WebSocket>();
         _webSocketSettings = new WebSocketSettings
@@ -34,17 +33,54 @@ public class WebSocketMessageProcessorTests
     private WebSocketSettings _webSocketSettings;
 
     [Test]
-    public async Task ProcessMessageAsync_ShouldThrowException_WhenMessageTypeIsClose()
+    public async Task ReadFullMessageAsync_ShouldReturnMessage_WhenMessageIsReceived()
     {
-        // Given: A WebSocket that returns a Close message type
-        var buffer = new byte[1024];
+        // Given: A WebSocket that returns a text message within size limits
+        var buffer = new byte[_webSocketSettings.BufferSize];
+        var message = "Hello, WebSocket!";
+        var messageBytes = Encoding.UTF8.GetBytes(message);
+
+        _mockWebSocket
+            .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var segment = call.Arg<ArraySegment<byte>>();
+                messageBytes.CopyTo(segment.Array!, segment.Offset);
+                return Task.FromResult(new WebSocketReceiveResult(messageBytes.Length, WebSocketMessageType.Text,
+                    true));
+            });
+
+        // When: ReadFullMessageAsync is called
+        var result = await _messageProcessor.ReadFullMessageAsync(
+            _mockWebSocket,
+            buffer,
+            _webSocketSettings,
+            CancellationToken.None
+        );
+
+        // Then: The returned message should match the original
+        result.Should().Be(message);
+    }
+
+    [Test]
+    public async Task ReadFullMessageAsync_ShouldThrowException_WhenMessageTypeIsClose()
+    {
+        // Given: A WebSocket that immediately sends a Close message
+        var buffer = new byte[_webSocketSettings.BufferSize];
+
         _mockWebSocket
             .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(
                 new WebSocketReceiveResult(0, WebSocketMessageType.Close, true)));
 
-        // When: ProcessMessageAsync is called
-        var act = async () => await _messageProcessor.ProcessMessageAsync(_mockWebSocket, buffer, _webSocketSettings);
+        // When: ReadFullMessageAsync is called
+        var act = async () =>
+            await _messageProcessor.ReadFullMessageAsync(
+                _mockWebSocket,
+                buffer,
+                _webSocketSettings,
+                CancellationToken.None
+            );
 
         // Then: A WebSocketException should be thrown
         await act.Should().ThrowAsync<WebSocketException>()
@@ -52,29 +88,41 @@ public class WebSocketMessageProcessorTests
     }
 
     [Test]
-    public async Task ProcessMessageAsync_ShouldProcessTextMessage_WhenMessageTypeIsText()
+    public async Task ReadFullMessageAsync_ShouldThrowException_WhenMessageExceedsMaxSize()
     {
-        // Given: A WebSocket that returns a Text message type
-        var buffer = new byte[1024];
-        var message = "Hello, WebSocket!";
-        var messageBytes = Encoding.UTF8.GetBytes(message);
+        // Given: A WebSocket that sends a message larger than MaxMessageSize
+        var buffer = new byte[_webSocketSettings.BufferSize];
+        var largeMessage = new byte[_webSocketSettings.MaxMessageSize + 1];
+        var currentOffset = 0;
 
         _mockWebSocket
             .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
-            .Returns(
-                Task.FromResult(
-                    new WebSocketReceiveResult(messageBytes.Length, WebSocketMessageType.Text, true)))
-            .AndDoes(call =>
+            .Returns(call =>
             {
                 var segment = call.Arg<ArraySegment<byte>>();
-                messageBytes.CopyTo(segment.Array, segment.Offset);
+                var bytesToCopy = Math.Min(segment.Count, largeMessage.Length - currentOffset);
+
+                if (bytesToCopy <= 0)
+                    return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Text, true));
+
+                Array.Copy(largeMessage, currentOffset, segment.Array!, segment.Offset, bytesToCopy);
+                currentOffset += bytesToCopy;
+
+                return Task.FromResult(new WebSocketReceiveResult(bytesToCopy, WebSocketMessageType.Text,
+                    currentOffset >= largeMessage.Length));
             });
 
-        // When: ProcessMessageAsync is called
-        await _messageProcessor.ProcessMessageAsync(_mockWebSocket, buffer, _webSocketSettings);
+        // When: ReadFullMessageAsync is called
+        var act = async () =>
+            await _messageProcessor.ReadFullMessageAsync(
+                _mockWebSocket,
+                buffer,
+                _webSocketSettings,
+                CancellationToken.None
+            );
 
-        // Then: The buffer should contain the received message
-        var receivedMessage = Encoding.UTF8.GetString(buffer, 0, messageBytes.Length);
-        receivedMessage.Should().Be(message);
+        // Then: An InvalidOperationException should be thrown
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("WebSocket message exceeded allowed size.");
     }
 }
