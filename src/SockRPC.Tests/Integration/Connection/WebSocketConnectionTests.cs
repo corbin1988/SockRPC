@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SockRPC.Core.Configuration;
-using SockRPC.Core.Connection;
 using SockRPC.Core.Connection.Interfaces;
+using SockRPC.Core.Extensions;
 
 namespace SockRPC.Tests.Integration.Connection;
 
@@ -25,24 +25,15 @@ public class WebSocketConnectionTests
     public async Task SetUp()
     {
         _port = GetFreeTcpPort();
-        var serviceCollection = new ServiceCollection();
-
-        // Load appsettings.json
         var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("Configuration/appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        // Bind WebSocketSettings
-        var webSocketSettings = configuration.GetSection("WebSocketSettings").Get<WebSocketSettings>();
-        if (webSocketSettings == null)
-            throw new InvalidOperationException("WebSocketSettings section is missing in the configuration.");
+        var serviceCollection = new ServiceCollection();
 
-        // Register dependencies
-        serviceCollection.AddSingleton(webSocketSettings);
-        serviceCollection.AddSingleton<IWebSocketConnectionAcceptor, WebSocketConnectionAcceptor>();
-        serviceCollection.AddSingleton<IWebSocketMessageProcessor, WebSocketMessageProcessor>();
-        serviceCollection.AddSingleton<IWebSocketBufferManager, WebSocketBufferManager>();
-        serviceCollection.AddSingleton<IWebSocketServer, WebSocketServer>();
+        // Use HostExtensions to configure services
+        serviceCollection.ConfigureServices(configuration);
 
         // Add logging
         serviceCollection.AddLogging(loggingBuilder =>
@@ -50,6 +41,14 @@ public class WebSocketConnectionTests
             loggingBuilder.AddConsole();
             loggingBuilder.AddDebug();
         });
+
+        // Manually configure WebSocketSettings
+        var webSocketSettings = new WebSocketSettings
+        {
+            BufferSize = 8192,
+            MaxMessageSize = 1048576
+        };
+        serviceCollection.AddSingleton(webSocketSettings);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         _webSocketServer = serviceProvider.GetRequiredService<IWebSocketServer>();
@@ -64,9 +63,10 @@ public class WebSocketConnectionTests
                         app.UseWebSockets();
                         app.Use(async (context, next) =>
                         {
-                            if (context.Request.Path == "/ws" && context.WebSockets.IsWebSocketRequest)
+                            if (context.WebSockets.IsWebSocketRequest)
                             {
-                                await _webSocketServer.HandleRequest(context);
+                                var webSocketServer = context.RequestServices.GetRequiredService<IWebSocketServer>();
+                                await webSocketServer.HandleRequest(context);
                             }
                             else
                             {
@@ -90,8 +90,11 @@ public class WebSocketConnectionTests
     [TearDown]
     public async Task TearDown()
     {
-        await _host.StopAsync();
-        _host.Dispose();
+        if (_host != null)
+        {
+            await _host.StopAsync();
+            _host.Dispose();
+        }
     }
 
     [Test]
