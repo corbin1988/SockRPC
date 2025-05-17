@@ -1,3 +1,4 @@
+using System.Net;
 using SockRPC.Core.Connection.Interfaces;
 
 namespace SockRPC.Core.Connection;
@@ -9,10 +10,17 @@ public static class WebSocketEndpoint
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentNullException(nameof(path), "Path cannot be null or empty.");
 
-        app.Map(path, context =>
+        app.Map("/ws", async context =>
         {
+            Console.WriteLine("Request received at /ws");
+            if (!context.WebSockets.IsWebSocketRequest)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return;
+            }
+
             var webSocketServer = context.RequestServices.GetRequiredService<IWebSocketServer>();
-            return webSocketServer.HandleRequest(context);
+            await webSocketServer.HandleRequest(context);
         });
     }
 }
