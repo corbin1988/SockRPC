@@ -17,7 +17,7 @@ namespace SockRPC.Tests.Integration;
 public abstract class WebSocketIntegrationTestsBase
 {
     private IHost _host;
-    private int _port;
+    internal int _port;
     protected IWebSocketServer WebSocketServer;
     protected ClientWebSocket ClientWebSocket;
 
