@@ -1,12 +1,11 @@
-using System;
+using SockRPC.Core.Extensions;
 
-namespace SockRPC
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            Console.WriteLine("SockRPC is alive!");
-        }
-    }
-}
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureServices(builder.Configuration);
+builder.Configuration.AddJsonFile("Configuration/appsettings.json", false, true);
+
+var app = builder.Build();
+
+app.ConfigureMiddleware();
+app.Run();
