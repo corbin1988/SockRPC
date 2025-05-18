@@ -10,9 +10,9 @@ public static class WebSocketEndpoint
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentNullException(nameof(path), "Path cannot be null or empty.");
 
-        app.Map("/ws", async context =>
+        app.Map(path, async context =>
         {
-            Console.WriteLine("Request received at /ws");
+            Console.WriteLine($"Request received at {path}");
             if (!context.WebSockets.IsWebSocketRequest)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
