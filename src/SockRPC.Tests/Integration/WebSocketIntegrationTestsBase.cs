@@ -18,8 +18,8 @@ public class WebSocketIntegrationTestsBase
 {
     private IHost _host;
     internal int _port;
-    protected IWebSocketServer WebSocketServer;
     protected ClientWebSocket ClientWebSocket;
+    protected IWebSocketServer WebSocketServer;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
@@ -27,7 +27,7 @@ public class WebSocketIntegrationTestsBase
         _port = GetFreeTcpPort();
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("Configuration/appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("Configuration/appsettings.json", false, true)
             .Build();
 
         var serviceCollection = new ServiceCollection();
@@ -77,10 +77,7 @@ public class WebSocketIntegrationTestsBase
             })
             .ConfigureServices(services =>
             {
-                foreach (var service in serviceCollection)
-                {
-                    services.Add(service);
-                }
+                foreach (var service in serviceCollection) services.Add(service);
             })
             .Build();
 
@@ -97,10 +94,8 @@ public class WebSocketIntegrationTestsBase
     {
         // Close the WebSocket connection
         if (ClientWebSocket.State == WebSocketState.Open)
-        {
             await ClientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Tests complete",
                 CancellationToken.None);
-        }
 
         ClientWebSocket?.Dispose();
 
@@ -113,7 +108,7 @@ public class WebSocketIntegrationTestsBase
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
-        int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
     }

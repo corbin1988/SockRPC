@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.WebSockets;
 using FluentAssertions;
 
@@ -22,7 +21,7 @@ public class WebSocketConnectionTests : WebSocketIntegrationTestsBase
         try
         {
             // Initialize and connect multiple WebSocket clients
-            for (int i = 0; i < connectionCount; i++)
+            for (var i = 0; i < connectionCount; i++)
             {
                 var client = new ClientWebSocket();
                 await client.ConnectAsync(new Uri($"ws://localhost:{_port}/ws"), CancellationToken.None);
@@ -38,10 +37,8 @@ public class WebSocketConnectionTests : WebSocketIntegrationTestsBase
             foreach (var client in clients)
             {
                 if (client.State == WebSocketState.Open)
-                {
                     await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Test complete",
                         CancellationToken.None);
-                }
 
                 client.Dispose();
             }

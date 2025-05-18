@@ -10,9 +10,6 @@ namespace SockRPC.Tests.Unit.Handling;
 [TestFixture]
 public class RawWebSocketMessageHandlerTests
 {
-    private ILogger<RawWebSocketMessageHandler> _logger;
-    private RawWebSocketMessageHandler _handler;
-
     [SetUp]
     public void SetUp()
     {
@@ -20,6 +17,9 @@ public class RawWebSocketMessageHandlerTests
         _logger = Substitute.For<ILogger<RawWebSocketMessageHandler>>();
         _handler = new RawWebSocketMessageHandler(_logger);
     }
+
+    private ILogger<RawWebSocketMessageHandler> _logger;
+    private RawWebSocketMessageHandler _handler;
 
     [Test]
     public async Task HandleMessageAsync_WhenMessageIsReceived_ShouldLogAndSendMessage()

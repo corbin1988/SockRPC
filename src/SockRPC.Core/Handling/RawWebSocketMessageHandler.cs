@@ -1,6 +1,5 @@
 using System.Net.WebSockets;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using SockRPC.Core.Handling.Interfaces;
 
 namespace SockRPC.Core.Handling;
