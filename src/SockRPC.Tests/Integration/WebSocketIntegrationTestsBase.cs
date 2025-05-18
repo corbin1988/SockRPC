@@ -14,7 +14,7 @@ using SockRPC.Core.Extensions;
 namespace SockRPC.Tests.Integration;
 
 [SetUpFixture]
-public abstract class WebSocketIntegrationTestsBase
+public class WebSocketIntegrationTestsBase
 {
     private IHost _host;
     internal int _port;
