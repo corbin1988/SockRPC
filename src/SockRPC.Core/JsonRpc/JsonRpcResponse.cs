@@ -5,7 +5,7 @@ namespace SockRPC.Core.JsonRpc;
 
 public class JsonRpcResponse
 {
-    protected JsonRpcResponse(string jsonrpc, string id)
+    public JsonRpcResponse(string jsonrpc, string? id)
     {
         Jsonrpc = jsonrpc;
         Id = id;
@@ -17,5 +17,5 @@ public class JsonRpcResponse
 
     [JsonPropertyName("error")] public JsonRpcError? Error { get; set; }
 
-    [JsonPropertyName("id")] public string Id { get; set; }
+    [JsonPropertyName("id")] public string? Id { get; set; }
 }
