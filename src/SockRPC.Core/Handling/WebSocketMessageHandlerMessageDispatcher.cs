@@ -2,9 +2,9 @@ using SockRPC.Core.Handling.Interfaces;
 
 namespace SockRPC.Core.Handling;
 
-public class WebSocketMessageHandlerDispatcher(
+public class WebSocketMessageHandlerMessageDispatcher(
     JsonRpcWebSocketHandler jsonRpcWebSocketHandler,
-    RawWebSocketMessageHandler rawWebSocketMessageHandler)
+    RawWebSocketMessageHandler rawWebSocketMessageHandler) : IWebSocketHandlerMessageDispatcher
 {
     public IWebSocketMessageHandler GetHandler(ReadOnlySpan<char> message)
     {

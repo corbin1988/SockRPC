@@ -7,7 +7,7 @@ using SockRPC.Core.JsonRpc.Interfaces;
 namespace SockRPC.Tests.Unit.Handling;
 
 [TestFixture]
-public class WebSocketMessageHandlerDispatcherTests
+public class WebSocketMessageHandlerMessageDispatcherTests
 {
     [SetUp]
     public void SetUp()
@@ -18,12 +18,13 @@ public class WebSocketMessageHandlerDispatcherTests
         var logger = Substitute.For<ILogger<RawWebSocketMessageHandler>>();
         _rawWebSocketMessageHandler = new RawWebSocketMessageHandler(logger);
 
-        _dispatcher = new WebSocketMessageHandlerDispatcher(_jsonRpcWebSocketHandler, _rawWebSocketMessageHandler);
+        _messageDispatcher =
+            new WebSocketMessageHandlerMessageDispatcher(_jsonRpcWebSocketHandler, _rawWebSocketMessageHandler);
     }
 
     private JsonRpcWebSocketHandler _jsonRpcWebSocketHandler;
     private RawWebSocketMessageHandler _rawWebSocketMessageHandler;
-    private WebSocketMessageHandlerDispatcher _dispatcher;
+    private WebSocketMessageHandlerMessageDispatcher _messageDispatcher;
 
     [Test]
     public void Given_JsonRpcMessage_When_GetHandlerIsCalled_Then_ReturnsJsonRpcHandler()
@@ -32,7 +33,7 @@ public class WebSocketMessageHandlerDispatcherTests
         var message = "{ \"jsonrpc\": \"2.0\", \"method\": \"test\" }".AsSpan();
 
         // When
-        var handler = _dispatcher.GetHandler(message);
+        var handler = _messageDispatcher.GetHandler(message);
 
         // Then
         handler.Should().Be(_jsonRpcWebSocketHandler);
@@ -45,7 +46,7 @@ public class WebSocketMessageHandlerDispatcherTests
         var message = "RAW MESSAGE".AsSpan();
 
         // When
-        var handler = _dispatcher.GetHandler(message);
+        var handler = _messageDispatcher.GetHandler(message);
 
         // Then
         handler.Should().Be(_rawWebSocketMessageHandler);
@@ -59,7 +60,7 @@ public class WebSocketMessageHandlerDispatcherTests
         var messageString = message.ToString();
 
         // When/Then
-        FluentActions.Invoking(() => _dispatcher.GetHandler(messageString.AsSpan()))
+        FluentActions.Invoking(() => _messageDispatcher.GetHandler(messageString.AsSpan()))
             .Should().Throw<InvalidOperationException>()
             .WithMessage("Message was empty");
     }
