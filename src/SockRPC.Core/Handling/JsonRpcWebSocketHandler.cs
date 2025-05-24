@@ -4,10 +4,12 @@ using System.Text.Json;
 using SockRPC.Core.Handling.Interfaces;
 using SockRPC.Core.JsonRpc;
 using SockRPC.Core.JsonRpc.Interfaces;
+using SockRPC.Core.Testing;
 
 namespace SockRPC.Core.Handling;
 
-public class JsonRpcWebSocketHandler(IJsonRpcRequestParser requestParser) : IWebSocketMessageHandler
+public class JsonRpcWebSocketHandler(IJsonRpcRequestParser requestParser, ILogger<JsonRpcWebSocketHandler> logger)
+    : IWebSocketMessageHandler
 {
     public async Task HandleMessageAsync(WebSocket webSocket, WebSocketReceiveResult result, byte[] buffer)
     {
@@ -15,23 +17,30 @@ public class JsonRpcWebSocketHandler(IJsonRpcRequestParser requestParser) : IWeb
 
         try
         {
+            logger.LogInformation("Received message: {Message}", message);
+
             var request = requestParser.ParseAndValidate(message);
 
             var context = new JsonRpcContext(request, webSocket);
+
+            await TestAcknowledgmentHelper.SendAcknowledgmentIfTest(webSocket, request);
 
             //TODO: Execute the route associated with the request
         }
         catch (JsonRpcValidationException ex)
         {
+            logger.LogWarning(ex, "Validation error occurred while processing message: {Message}", message);
             await SendErrorResponse(webSocket, ex.ErrorResponse);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
+            logger.LogError(ex, "JSON parsing error occurred while processing message: {Message}", message);
             var errorResponse = CreateErrorResponse(-32700, "Parse error: Invalid JSON.");
             await SendErrorResponse(webSocket, errorResponse);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Unexpected error occurred while processing message: {Message}", message);
             var errorResponse = CreateErrorResponse(-32603, "Internal error");
             await SendErrorResponse(webSocket, errorResponse);
         }
@@ -41,7 +50,6 @@ public class JsonRpcWebSocketHandler(IJsonRpcRequestParser requestParser) : IWeb
     {
         var responseMessage = JsonSerializer.Serialize(errorResponse);
         var buffer = Encoding.UTF8.GetBytes(responseMessage);
-        //TODO: Reuse RawWebSocketMessageHandler.SendMessageAsync
         await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
             CancellationToken.None);
     }

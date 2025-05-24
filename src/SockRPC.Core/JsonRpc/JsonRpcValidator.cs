@@ -7,48 +7,47 @@ public class JsonRpcValidator : IJsonRpcValidator
 {
     public JsonRpcResponse ValidateRequest(JsonRpcRequest request)
     {
-        var versionResponse = ValidateJsonRpcVersion(request.Jsonrpc);
-        if (versionResponse != null) return versionResponse;
+        if (ValidateJsonRpcVersion(request.Jsonrpc, request.Id) is { } versionResponse) return versionResponse;
 
-        var methodResponse = ValidateMethod(request.Method);
-        if (methodResponse != null) return methodResponse;
+        if (ValidateMethod(request.Method, request.Id) is { } methodResponse) return methodResponse;
 
-        return ValidateParams(request.Params);
+        return ValidateParams(request.Params, request.Id);
     }
 
-    public JsonRpcResponse MethodNotFound(string method)
+    public JsonRpcResponse MethodNotFound(string method, string id)
     {
-        return CreateErrorResponse(-32601, $"Method not found: {method}");
+        return CreateErrorResponse(-32601, $"Method not found: {method}", id);
     }
 
-    internal JsonRpcResponse ValidateJsonRpcVersion(string jsonrpc)
+    internal JsonRpcResponse ValidateJsonRpcVersion(string jsonrpc, string id)
     {
-        if (jsonrpc != "2.0") return CreateErrorResponse(-32600, "Invalid JSON-RPC version.");
+        if (jsonrpc != "2.0") return CreateErrorResponse(-32600, "Invalid JSON-RPC version.", id);
 
         return null!;
     }
 
-    internal JsonRpcResponse ValidateMethod(string method)
+    internal JsonRpcResponse ValidateMethod(string method, string id)
     {
         var methodParts = method.Split('.');
         if (methodParts.Length != 2)
-            return CreateErrorResponse(-32601, "Method not found: Expected 'topic.action' format.");
+            return CreateErrorResponse(-32601, "Method not found: Expected 'topic.action' format.", id);
 
         return null!;
     }
 
-    internal JsonRpcResponse ValidateParams(JsonElement parameters)
+    internal JsonRpcResponse ValidateParams(JsonElement parameters, string id)
     {
         if (parameters.ValueKind == JsonValueKind.Null)
-            return CreateErrorResponse(-32602, "Invalid params: Parameters cannot be null.");
+            return CreateErrorResponse(-32602, "Invalid params: Parameters cannot be null.", id);
 
         return null!;
     }
 
-    private JsonRpcResponse CreateErrorResponse(int code, string message)
+    private JsonRpcResponse CreateErrorResponse(int code, string message, string id)
     {
-        return new JsonRpcResponse("2.0", null)
+        return new JsonRpcResponse("2.0", id)
         {
+            Id = id,
             Error = new JsonRpcError(message, null)
             {
                 Code = code

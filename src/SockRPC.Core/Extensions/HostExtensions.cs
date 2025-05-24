@@ -15,6 +15,7 @@ public static class HostExtensions
         var webSocketSettings = configuration.GetSection("WebSocketSettings").Get<WebSocketSettings>();
 
         if (webSocketSettings != null) services.AddSingleton(webSocketSettings);
+        services.AddLogging();
         services.AddSingleton<IWebSocketServer, WebSocketServer>();
         services.AddSingleton<IWebSocketConnectionAcceptor, WebSocketConnectionAcceptor>();
         services.AddSingleton<IWebSocketHandlerMessageDispatcher, WebSocketMessageHandlerMessageDispatcher>();
@@ -24,6 +25,7 @@ public static class HostExtensions
         services.AddSingleton<IJsonRpcRequestParser, JsonRpcRequestParser>();
         services.AddSingleton<IJsonRpcValidator, JsonRpcValidator>();
         services.AddSingleton<RawWebSocketMessageHandler>();
+        services.AddSingleton<JsonRpcWebSocketHandler>();
     }
 
     public static void ConfigureMiddleware(this WebApplication app)
