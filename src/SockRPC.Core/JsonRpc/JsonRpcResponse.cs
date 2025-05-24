@@ -1,10 +1,15 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SockRPC.Core.JsonRpc;
 
 public class JsonRpcResponse
 {
+    public JsonRpcResponse(string jsonrpc, string? id)
+    {
+        Jsonrpc = jsonrpc;
+        Id = id;
+    }
+
     [JsonPropertyName("jsonrpc")] public string Jsonrpc { get; set; }
 
     [JsonPropertyName("id")] public string? Id { get; set; }
@@ -14,10 +19,4 @@ public class JsonRpcResponse
     [JsonPropertyName("error")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonRpcError? Error { get; set; }
-
-    public JsonRpcResponse(string jsonrpc, string? id)
-    {
-        Jsonrpc = jsonrpc;
-        Id = id;
-    }
 }

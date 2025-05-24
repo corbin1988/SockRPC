@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 
-
 namespace SockRPC.Tests.Integration.JsonRpc;
 
 [TestFixture]
@@ -19,7 +18,7 @@ public class WebSocketMessageHandlerMessageDispatcherTests : WebSocketIntegratio
         {
             jsonrpc = "2.0",
             result = "Acknowledged",
-            id = id
+            id
         };
         var buffer = Encoding.UTF8.GetBytes(validRequest);
 

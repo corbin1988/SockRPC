@@ -2,7 +2,6 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using SockRPC.Core.Testing;
 
 namespace SockRPC.Tests.Integration.JsonRpc;
 
@@ -19,7 +18,7 @@ public class JsonRpcValidationTests : WebSocketIntegrationTestsBase
         {
             jsonrpc = "2.0",
             error = new { code = -32600, message = "Invalid JSON-RPC version." },
-            id = id
+            id
         };
         var buffer = Encoding.UTF8.GetBytes(invalidRequest);
 
@@ -47,7 +46,7 @@ public class JsonRpcValidationTests : WebSocketIntegrationTestsBase
         {
             jsonrpc = "2.0",
             error = new { code = -32601, message = "Method not found: Expected 'topic.action' format." },
-            id = id
+            id
         };
         var buffer = Encoding.UTF8.GetBytes(invalidRequest);
 
@@ -74,7 +73,7 @@ public class JsonRpcValidationTests : WebSocketIntegrationTestsBase
         {
             jsonrpc = "2.0",
             error = new { code = -32602, message = "Invalid params: Parameters cannot be null." },
-            id = id
+            id
         };
         var buffer = Encoding.UTF8.GetBytes(invalidRequest);
 

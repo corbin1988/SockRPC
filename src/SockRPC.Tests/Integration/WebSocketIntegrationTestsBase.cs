@@ -25,8 +25,8 @@ public class WebSocketIntegrationTestsBase
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        TestAcknowledgmentHelper.IsTestEnvironment = true; 
-        
+        TestAcknowledgmentHelper.IsTestEnvironment = true;
+
         _port = GetFreeTcpPort();
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
@@ -105,8 +105,8 @@ public class WebSocketIntegrationTestsBase
         // Stop and dispose of the host
         await _host.StopAsync();
         _host.Dispose();
-        
-        TestAcknowledgmentHelper.IsTestEnvironment = false; 
+
+        TestAcknowledgmentHelper.IsTestEnvironment = false;
     }
 
     private int GetFreeTcpPort()

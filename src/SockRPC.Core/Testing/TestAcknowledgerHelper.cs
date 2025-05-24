@@ -16,7 +16,7 @@ public static class TestAcknowledgmentHelper
         var acknowledgmentResponse = new JsonRpcResponse("2.0", request.Id)
         {
             Id = request.Id,
-            Result = "Acknowledged" 
+            Result = "Acknowledged"
         };
 
         var responseMessage = JsonSerializer.Serialize(acknowledgmentResponse, new JsonSerializerOptions
