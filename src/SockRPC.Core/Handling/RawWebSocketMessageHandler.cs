@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using SockRPC.Core.Handling.Interfaces;
+using SockRPC.Core.Testing;
 
 namespace SockRPC.Core.Handling;
 
