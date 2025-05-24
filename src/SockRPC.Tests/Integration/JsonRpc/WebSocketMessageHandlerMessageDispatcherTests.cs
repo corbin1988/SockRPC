@@ -2,12 +2,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
-using NUnit.Framework;
-using SockRPC.Core.Handling;
-using SockRPC.Core.JsonRpc;
-using SockRPC.Core.JsonRpc.Interfaces;
+
 
 namespace SockRPC.Tests.Integration.JsonRpc;
 
