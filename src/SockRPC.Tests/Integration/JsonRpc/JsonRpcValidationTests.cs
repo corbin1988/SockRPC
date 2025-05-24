@@ -1,0 +1,92 @@
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using FluentAssertions;
+
+namespace SockRPC.Tests.Integration.JsonRpc;
+
+[TestFixture]
+public class JsonRpcValidationTests : WebSocketIntegrationTestsBase
+{
+    [Test]
+    public async Task Given_InvalidJsonRpcVersion_When_Processed_Then_ShouldReturnErrorResponse()
+    {
+        // Given
+        var id = Guid.NewGuid().ToString();
+        var invalidRequest = $"{{\"jsonrpc\":\"1.0\",\"method\":\"test.method\",\"params\":{{}},\"id\":\"{id}\"}}";
+        var expectedError = new
+        {
+            jsonrpc = "2.0",
+            error = new { code = -32600, message = "Invalid JSON-RPC version." },
+            id
+        };
+        var buffer = Encoding.UTF8.GetBytes(invalidRequest);
+
+        // When
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await ClientWebSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
+
+        var responseBuffer = new byte[16384];
+        var result = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(responseBuffer), cts.Token);
+        var responseMessage = Encoding.UTF8.GetString(responseBuffer, 0, result.Count);
+
+        // Then
+        var actualResponse = JsonSerializer.Deserialize(responseMessage, expectedError.GetType());
+        actualResponse.Should().BeEquivalentTo(expectedError);
+    }
+
+    [Test]
+    public async Task Given_InvalidMethodFormat_When_Processed_Then_ShouldReturnErrorResponse()
+    {
+        // Given
+        var id = Guid.NewGuid().ToString();
+        var invalidRequest =
+            $"{{\"jsonrpc\":\"2.0\",\"method\":\"invalidMethodFormat\",\"params\":{{}},\"id\":\"{id}\"}}";
+        var expectedError = new
+        {
+            jsonrpc = "2.0",
+            error = new { code = -32601, message = "Method not found: Expected 'topic.action' format." },
+            id
+        };
+        var buffer = Encoding.UTF8.GetBytes(invalidRequest);
+
+        // When
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await ClientWebSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
+
+        var responseBuffer = new byte[16384];
+        var result = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(responseBuffer), cts.Token);
+        var responseMessage = Encoding.UTF8.GetString(responseBuffer, 0, result.Count);
+
+        // Then
+        var actualResponse = JsonSerializer.Deserialize(responseMessage, expectedError.GetType());
+        actualResponse.Should().BeEquivalentTo(expectedError);
+    }
+
+    [Test]
+    public async Task Given_NullParams_When_Processed_Then_ShouldReturnErrorResponse()
+    {
+        // Given
+        var id = Guid.NewGuid().ToString();
+        var invalidRequest = $"{{\"jsonrpc\":\"2.0\",\"method\":\"test.method\",\"params\":null,\"id\":\"{id}\"}}";
+        var expectedError = new
+        {
+            jsonrpc = "2.0",
+            error = new { code = -32602, message = "Invalid params: Parameters cannot be null." },
+            id
+        };
+        var buffer = Encoding.UTF8.GetBytes(invalidRequest);
+
+        // When
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await ClientWebSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
+
+        var responseBuffer = new byte[16384];
+        var result = await ClientWebSocket.ReceiveAsync(new ArraySegment<byte>(responseBuffer), cts.Token);
+        var responseMessage = Encoding.UTF8.GetString(responseBuffer, 0, result.Count);
+
+        // Then
+        var actualResponse = JsonSerializer.Deserialize(responseMessage, expectedError.GetType());
+        actualResponse.Should().BeEquivalentTo(expectedError);
+    }
+}

@@ -4,6 +4,7 @@ using FluentAssertions;
 using NSubstitute;
 using SockRPC.Core.Configuration;
 using SockRPC.Core.Connection;
+using SockRPC.Core.Handling.Interfaces;
 
 namespace SockRPC.Tests.Connection;
 
@@ -13,7 +14,9 @@ public class WebSocketMessageProcessorTests
     [SetUp]
     public void SetUp()
     {
-        _messageProcessor = new WebSocketMessageProcessor();
+        // IWebSocketHandlerDispatcher
+        _mockWebSocketHandlerMessageDispatcher = Substitute.For<IWebSocketHandlerMessageDispatcher>();
+        _messageProcessor = new WebSocketMessageProcessor(_mockWebSocketHandlerMessageDispatcher);
         _mockWebSocket = Substitute.For<WebSocket>();
         _webSocketSettings = new WebSocketSettings
         {
@@ -31,6 +34,7 @@ public class WebSocketMessageProcessorTests
     private WebSocketMessageProcessor _messageProcessor;
     private WebSocket _mockWebSocket;
     private WebSocketSettings _webSocketSettings;
+    private IWebSocketHandlerMessageDispatcher _mockWebSocketHandlerMessageDispatcher;
 
     [Test]
     public async Task ReadFullMessageAsync_ShouldReturnMessage_WhenMessageIsReceived()

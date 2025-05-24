@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using SockRPC.Core.Configuration;
 using SockRPC.Core.Connection.Interfaces;
 using SockRPC.Core.Extensions;
+using SockRPC.Core.Testing;
 
 namespace SockRPC.Tests.Integration;
 
@@ -18,16 +19,18 @@ public class WebSocketIntegrationTestsBase
 {
     private IHost _host;
     internal int _port;
-    protected IWebSocketServer WebSocketServer;
     protected ClientWebSocket ClientWebSocket;
+    protected IWebSocketServer WebSocketServer;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
+        TestAcknowledgmentHelper.IsTestEnvironment = true;
+
         _port = GetFreeTcpPort();
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("Configuration/appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("Configuration/appsettings.json", false, true)
             .Build();
 
         var serviceCollection = new ServiceCollection();
@@ -77,10 +80,7 @@ public class WebSocketIntegrationTestsBase
             })
             .ConfigureServices(services =>
             {
-                foreach (var service in serviceCollection)
-                {
-                    services.Add(service);
-                }
+                foreach (var service in serviceCollection) services.Add(service);
             })
             .Build();
 
@@ -97,23 +97,23 @@ public class WebSocketIntegrationTestsBase
     {
         // Close the WebSocket connection
         if (ClientWebSocket.State == WebSocketState.Open)
-        {
             await ClientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Tests complete",
                 CancellationToken.None);
-        }
 
         ClientWebSocket?.Dispose();
 
         // Stop and dispose of the host
         await _host.StopAsync();
         _host.Dispose();
+
+        TestAcknowledgmentHelper.IsTestEnvironment = false;
     }
 
     private int GetFreeTcpPort()
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
-        int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
     }
