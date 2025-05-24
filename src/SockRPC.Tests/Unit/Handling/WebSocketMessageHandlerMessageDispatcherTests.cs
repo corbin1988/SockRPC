@@ -12,11 +12,12 @@ public class WebSocketMessageHandlerMessageDispatcherTests
     [SetUp]
     public void SetUp()
     {
+        var jsonRpcLogger = Substitute.For<ILogger<JsonRpcWebSocketHandler>>();
+        var rawWebSocketLogger = Substitute.For<ILogger<RawWebSocketMessageHandler>>();
         var requestParser = Substitute.For<IJsonRpcRequestParser>();
-        _jsonRpcWebSocketHandler = new JsonRpcWebSocketHandler(requestParser);
 
-        var logger = Substitute.For<ILogger<RawWebSocketMessageHandler>>();
-        _rawWebSocketMessageHandler = new RawWebSocketMessageHandler(logger);
+        _jsonRpcWebSocketHandler = new JsonRpcWebSocketHandler(requestParser, jsonRpcLogger);
+        _rawWebSocketMessageHandler = new RawWebSocketMessageHandler(rawWebSocketLogger);
 
         _messageDispatcher =
             new WebSocketMessageHandlerMessageDispatcher(_jsonRpcWebSocketHandler, _rawWebSocketMessageHandler);

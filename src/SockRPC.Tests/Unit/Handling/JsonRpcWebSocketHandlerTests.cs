@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SockRPC.Core.Handling;
 using SockRPC.Core.JsonRpc;
@@ -14,8 +15,9 @@ public class JsonRpcWebSocketHandlerTests
     [SetUp]
     public void SetUp()
     {
+        var jsonRpcLogger = Substitute.For<ILogger<JsonRpcWebSocketHandler>>(); 
         _requestParser = Substitute.For<IJsonRpcRequestParser>();
-        _handler = new JsonRpcWebSocketHandler(_requestParser);
+        _handler = new JsonRpcWebSocketHandler(_requestParser, jsonRpcLogger);
         _webSocket = Substitute.For<WebSocket>();
     }
 

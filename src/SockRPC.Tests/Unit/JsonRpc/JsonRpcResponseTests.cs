@@ -13,7 +13,7 @@ public class JsonRpcResponseTests
     {
         // Given
         var response = Substitute.For<JsonRpcResponse>("2.0", "1");
-        response.Result = JsonDocument.Parse("{}").RootElement;
+        response.Result = JsonDocument.Parse("{}").RootElement.ToString();
 
         // When
         var json = JsonSerializer.Serialize(response);

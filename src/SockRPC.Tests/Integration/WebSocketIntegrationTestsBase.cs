@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using SockRPC.Core.Configuration;
 using SockRPC.Core.Connection.Interfaces;
 using SockRPC.Core.Extensions;
+using SockRPC.Core.Testing;
 
 namespace SockRPC.Tests.Integration;
 
@@ -24,6 +25,8 @@ public class WebSocketIntegrationTestsBase
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
+        TestAcknowledgmentHelper.IsTestEnvironment = true; 
+        
         _port = GetFreeTcpPort();
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
@@ -102,6 +105,8 @@ public class WebSocketIntegrationTestsBase
         // Stop and dispose of the host
         await _host.StopAsync();
         _host.Dispose();
+        
+        TestAcknowledgmentHelper.IsTestEnvironment = false; 
     }
 
     private int GetFreeTcpPort()
