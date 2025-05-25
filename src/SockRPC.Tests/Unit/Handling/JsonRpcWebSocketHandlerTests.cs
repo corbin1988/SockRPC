@@ -35,7 +35,7 @@ public class JsonRpcWebSocketHandlerTests
     private IRouteExecutor _routeExecutor;
 
     [Test]
-    public async Task Given_ValidRequest_When_HandleMessageAsync_Then_ParsesAndValidatesRequest()
+    public async Task ValidRequest_HandleMessageAsync_ParsesIncomingWebSocketMessageCorrectly()
     {
         // Given
         const string validJson = "{\"jsonrpc\":\"2.0\",\"method\":\"test\",\"params\":{},\"id\":\"1\"}";
@@ -53,7 +53,99 @@ public class JsonRpcWebSocketHandlerTests
     }
 
     [Test]
-    public async Task Given_InvalidRequest_When_HandleMessageAsync_Then_SendsValidationErrorResponse()
+    public async Task InvalidJsonRpcRequest_HandleMessageAsync_SendsValidationErrorResponse()
+    {
+        // Given
+        const string invalidJson = "{\"jsonrpc\":\"2.0\",\"method\":\"test\",\"params\":{},\"id\":\"1\"}";
+        var buffer = Encoding.UTF8.GetBytes(invalidJson);
+        var result = new WebSocketReceiveResult(buffer.Length, WebSocketMessageType.Text, true);
+        var errorResponse = new JsonRpcResponse("2.0", "1")
+        {
+            Error = new JsonRpcError("Validation error", null) { Code = -32602 }
+        };
+
+        _requestParser
+            .When(x => x.ParseAndValidate(invalidJson))
+            .Do(_ => throw new JsonRpcValidationException(errorResponse));
+
+        // When
+        await _handler.HandleMessageAsync(_webSocket, result, buffer);
+
+        // Then
+        await _webSocket.Received(1).SendAsync(
+            Arg.Is<ArraySegment<byte>>(segment =>
+                segment.Array != null && Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count)
+                    .Contains("\"code\":-32602")),
+            WebSocketMessageType.Text,
+            true,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task ValidRequest_HandleMessageAsync_DelegatesToRouteExecutor()
+    {
+        // Given
+        const string validJson = "{\"jsonrpc\":\"2.0\",\"method\":\"test\",\"params\":{},\"id\":\"1\"}";
+        var buffer = Encoding.UTF8.GetBytes(validJson);
+        var result = new WebSocketReceiveResult(buffer.Length, WebSocketMessageType.Text, true);
+        var request = new JsonRpcRequest("2.0", "test", JsonDocument.Parse("{}").RootElement, "1");
+        var context = new JsonRpcContext(request, _webSocket);
+
+        _requestParser.ParseAndValidate(validJson).Returns(request);
+
+        // When
+        await _handler.HandleMessageAsync(_webSocket, result, buffer);
+
+        // Then
+        await _routeExecutor.Received(1).ExecuteAsync(Arg.Is<JsonRpcContext>(ctx =>
+            ctx.Request.Method == "test" && ctx.Request.Id == "1"));
+    }
+
+    [Test]
+    public async Task Exception_HandleMessageAsync_SendsInternalErrorResponse()
+    {
+        // Given
+        const string validJson = "{\"jsonrpc\":\"2.0\",\"method\":\"test\",\"params\":{},\"id\":\"1\"}";
+        var buffer = Encoding.UTF8.GetBytes(validJson);
+        var result = new WebSocketReceiveResult(buffer.Length, WebSocketMessageType.Text, true);
+
+        _requestParser
+            .When(x => x.ParseAndValidate(validJson))
+            .Do(_ => throw new Exception("Unexpected error"));
+
+        // When
+        await _handler.HandleMessageAsync(_webSocket, result, buffer);
+
+        // Then
+        await _webSocket.Received(1).SendAsync(
+            Arg.Is<ArraySegment<byte>>(segment =>
+                segment.Array != null && Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count)
+                    .Contains("\"code\":-32603")),
+            WebSocketMessageType.Text,
+            true,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task ValidRequest_HandleMessageAsync_ParsesAndValidatesRequest()
+    {
+        // Given
+        const string validJson = "{\"jsonrpc\":\"2.0\",\"method\":\"test\",\"params\":{},\"id\":\"1\"}";
+        var buffer = Encoding.UTF8.GetBytes(validJson);
+        var result = new WebSocketReceiveResult(buffer.Length, WebSocketMessageType.Text, true);
+        var request = new JsonRpcRequest("2.0", "test", JsonDocument.Parse("{}").RootElement, "1");
+
+        _requestParser.ParseAndValidate(validJson).Returns(request);
+
+        // When
+        await _handler.HandleMessageAsync(_webSocket, result, buffer);
+
+        // Then
+        _requestParser.Received(1).ParseAndValidate(validJson);
+    }
+
+    [Test]
+    public async Task InvalidRequest_HandleMessageAsync_SendsValidationErrorResponse()
     {
         // Given
         var invalidJson = "{\"jsonrpc\":\"2.0\",\"method\":\"test\",\"params\":{},\"id\":\"1\"}";
@@ -82,7 +174,7 @@ public class JsonRpcWebSocketHandlerTests
     }
 
     [Test]
-    public async Task Given_InvalidJson_When_HandleMessageAsync_Then_SendsParseErrorResponse()
+    public async Task InvalidJson_HandleMessageAsync_SendsParseErrorResponse()
     {
         // Given
         const string invalidJson = "{invalid}";
@@ -107,7 +199,7 @@ public class JsonRpcWebSocketHandlerTests
     }
 
     [Test]
-    public async Task Given_UnexpectedException_When_HandleMessageAsync_Then_SendsInternalErrorResponse()
+    public async Task UnexpectedException_HandleMessageAsync_SendsInternalErrorResponse()
     {
         // Given
         const string validJson = "{\"jsonrpc\":\"2.0\",\"method\":\"test\",\"params\":{},\"id\":\"1\"}";

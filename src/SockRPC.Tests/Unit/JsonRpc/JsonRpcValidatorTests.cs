@@ -75,4 +75,38 @@ public class JsonRpcValidatorTests
         // Then
         response.Should().BeNull();
     }
+
+    [Test]
+    public void CreateErrorResponse_ShouldReturnCorrectErrorResponse_ForMethodNotFound()
+    {
+        // Given
+        const string method = "unknownMethod";
+        const string id = "1";
+
+        // When
+        var response = _validator.MethodNotFound(method, id);
+
+        // Then
+        response.Should().NotBeNull();
+        response.Error.Should().NotBeNull();
+        response.Error!.Code.Should().Be(-32601);
+        response.Error.Message.Should().Be($"Method not found: {method}");
+    }
+
+    [Test]
+    public void CreateErrorResponse_ShouldReturnCorrectErrorResponse_ForInternalError()
+    {
+        // Given
+        const string id = "1";
+        const string message = "Internal error occurred";
+
+        // When
+        var response = _validator.CreateErrorResponse(-32603, message, id);
+
+        // Then
+        response.Should().NotBeNull();
+        response.Error.Should().NotBeNull();
+        response.Error!.Code.Should().Be(-32603);
+        response.Error.Message.Should().Be(message);
+    }
 }
