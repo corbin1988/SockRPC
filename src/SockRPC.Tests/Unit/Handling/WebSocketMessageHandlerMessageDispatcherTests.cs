@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SockRPC.Core.Handling;
 using SockRPC.Core.JsonRpc.Interfaces;
+using SockRPC.Core.Routing.Interfaces;
 
 namespace SockRPC.Tests.Unit.Handling;
 
@@ -15,8 +16,9 @@ public class WebSocketMessageHandlerMessageDispatcherTests
         var jsonRpcLogger = Substitute.For<ILogger<JsonRpcWebSocketHandler>>();
         var rawWebSocketLogger = Substitute.For<ILogger<RawWebSocketMessageHandler>>();
         var requestParser = Substitute.For<IJsonRpcRequestParser>();
+        var routeExecutor = Substitute.For<IRouteExecutor>();
 
-        _jsonRpcWebSocketHandler = new JsonRpcWebSocketHandler(requestParser, jsonRpcLogger);
+        _jsonRpcWebSocketHandler = new JsonRpcWebSocketHandler(requestParser, routeExecutor, jsonRpcLogger);
         _rawWebSocketMessageHandler = new RawWebSocketMessageHandler(rawWebSocketLogger);
 
         _messageDispatcher =

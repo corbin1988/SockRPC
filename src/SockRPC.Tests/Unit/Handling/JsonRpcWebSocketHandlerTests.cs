@@ -6,6 +6,7 @@ using NSubstitute;
 using SockRPC.Core.Handling;
 using SockRPC.Core.JsonRpc;
 using SockRPC.Core.JsonRpc.Interfaces;
+using SockRPC.Core.Routing.Interfaces;
 
 namespace SockRPC.Tests.Unit.Handling;
 
@@ -17,7 +18,8 @@ public class JsonRpcWebSocketHandlerTests
     {
         var jsonRpcLogger = Substitute.For<ILogger<JsonRpcWebSocketHandler>>();
         _requestParser = Substitute.For<IJsonRpcRequestParser>();
-        _handler = new JsonRpcWebSocketHandler(_requestParser, jsonRpcLogger);
+        _routeExecutor = Substitute.For<IRouteExecutor>();
+        _handler = new JsonRpcWebSocketHandler(_requestParser, _routeExecutor, jsonRpcLogger);
         _webSocket = Substitute.For<WebSocket>();
     }
 
@@ -30,6 +32,7 @@ public class JsonRpcWebSocketHandlerTests
     private IJsonRpcRequestParser _requestParser;
     private JsonRpcWebSocketHandler _handler;
     private WebSocket _webSocket;
+    private IRouteExecutor _routeExecutor;
 
     [Test]
     public async Task Given_ValidRequest_When_HandleMessageAsync_Then_ParsesAndValidatesRequest()

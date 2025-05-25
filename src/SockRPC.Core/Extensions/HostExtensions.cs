@@ -5,6 +5,8 @@ using SockRPC.Core.Handling;
 using SockRPC.Core.Handling.Interfaces;
 using SockRPC.Core.JsonRpc;
 using SockRPC.Core.JsonRpc.Interfaces;
+using SockRPC.Core.Routing;
+using SockRPC.Core.Routing.Interfaces;
 
 namespace SockRPC.Core.Extensions;
 
@@ -26,6 +28,8 @@ public static class HostExtensions
         services.AddSingleton<IJsonRpcValidator, JsonRpcValidator>();
         services.AddSingleton<RawWebSocketMessageHandler>();
         services.AddSingleton<JsonRpcWebSocketHandler>();
+        services.AddSingleton<IRouteRegistry, RouteRegistry>();
+        services.AddSingleton<IRouteExecutor, RouteExecutor>();
     }
 
     public static void ConfigureMiddleware(this WebApplication app)

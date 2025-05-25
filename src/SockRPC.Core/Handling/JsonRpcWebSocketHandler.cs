@@ -4,11 +4,15 @@ using System.Text.Json;
 using SockRPC.Core.Handling.Interfaces;
 using SockRPC.Core.JsonRpc;
 using SockRPC.Core.JsonRpc.Interfaces;
+using SockRPC.Core.Routing.Interfaces;
 using SockRPC.Core.Testing;
 
 namespace SockRPC.Core.Handling;
 
-public class JsonRpcWebSocketHandler(IJsonRpcRequestParser requestParser, ILogger<JsonRpcWebSocketHandler> logger)
+public class JsonRpcWebSocketHandler(
+    IJsonRpcRequestParser requestParser,
+    IRouteExecutor routeExecutor,
+    ILogger<JsonRpcWebSocketHandler> logger)
     : IWebSocketMessageHandler
 {
     public async Task HandleMessageAsync(WebSocket webSocket, WebSocketReceiveResult result, byte[] buffer)
@@ -26,7 +30,7 @@ public class JsonRpcWebSocketHandler(IJsonRpcRequestParser requestParser, ILogge
             await TestAcknowledgmentHelper.SendAcknowledgmentIfTest(webSocket, request);
 
             //TODO: Execute the route associated with the request 
-            // await _routeExecutor.ExecuteAsync(context);
+            await routeExecutor.ExecuteAsync(context);
         }
         catch (JsonRpcValidationException ex)
         {
