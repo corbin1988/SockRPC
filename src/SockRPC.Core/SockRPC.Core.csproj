@@ -33,11 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Middleware\"/>
-        <Folder Include="Routing\"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="Configuration/appsettings.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>

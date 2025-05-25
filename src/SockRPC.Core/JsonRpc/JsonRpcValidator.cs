@@ -19,6 +19,18 @@ public class JsonRpcValidator : IJsonRpcValidator
         return CreateErrorResponse(-32601, $"Method not found: {method}", id);
     }
 
+    public JsonRpcResponse CreateErrorResponse(int code, string message, string id)
+    {
+        return new JsonRpcResponse("2.0", id)
+        {
+            Id = id,
+            Error = new JsonRpcError(message, null)
+            {
+                Code = code
+            }
+        };
+    }
+
     internal JsonRpcResponse ValidateJsonRpcVersion(string jsonrpc, string id)
     {
         if (jsonrpc != "2.0") return CreateErrorResponse(-32600, "Invalid JSON-RPC version.", id);
@@ -41,17 +53,5 @@ public class JsonRpcValidator : IJsonRpcValidator
             return CreateErrorResponse(-32602, "Invalid params: Parameters cannot be null.", id);
 
         return null!;
-    }
-
-    private JsonRpcResponse CreateErrorResponse(int code, string message, string id)
-    {
-        return new JsonRpcResponse("2.0", id)
-        {
-            Id = id,
-            Error = new JsonRpcError(message, null)
-            {
-                Code = code
-            }
-        };
     }
 }
